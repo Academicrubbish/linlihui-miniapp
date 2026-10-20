@@ -1,0 +1,30 @@
+[
+	{
+		"IndexName": "business_no_unique",
+		"MgoKeySchema": {
+			"MgoIndexKeys": [
+				{
+					"Name": "business_no",
+					"Direction": "1"
+				}
+			],
+			"MgoIsUnique": true
+		}
+	},
+	{
+		"IndexName": "customer_created_at",
+		"MgoKeySchema": {
+			"MgoIndexKeys": [
+				{
+					"Name": "customer_id",
+					"Direction": "1"
+				},
+				{
+					"Name": "created_at",
+					"Direction": "-1"
+				}
+			],
+			"MgoIsUnique": false
+		}
+	}
+]

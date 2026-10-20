@@ -1,0 +1,38 @@
+[
+	{
+		"IndexName": "platform_order_unique",
+		"MgoKeySchema": {
+			"MgoIndexKeys": [
+				{
+					"Name": "platform",
+					"Direction": "1"
+				},
+				{
+					"Name": "order_no",
+					"Direction": "1"
+				}
+			],
+			"MgoIsUnique": true
+		}
+	},
+	{
+		"IndexName": "customer_status_created_at",
+		"MgoKeySchema": {
+			"MgoIndexKeys": [
+				{
+					"Name": "customer_id",
+					"Direction": "1"
+				},
+				{
+					"Name": "status",
+					"Direction": "1"
+				},
+				{
+					"Name": "created_at",
+					"Direction": "-1"
+				}
+			],
+			"MgoIsUnique": false
+		}
+	}
+]

@@ -1,0 +1,39 @@
+{
+	"bsonType": "object",
+	"required": ["operator_id", "action", "target_type", "target_id", "request_id", "created_at"],
+	"permission": {
+		"read": false,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "管理员操作日志 ID"
+		},
+		"operator_id": {
+			"bsonType": "string"
+		},
+		"action": {
+			"bsonType": "string",
+			"enum": ["grant_benefit", "approve_application", "reject_application", "mark_paid", "adjust_ledger"]
+		},
+		"target_type": {
+			"bsonType": "string"
+		},
+		"target_id": {
+			"bsonType": "string"
+		},
+		"request_id": {
+			"bsonType": "string",
+			"description": "请求幂等标识"
+		},
+		"summary": {
+			"bsonType": "string",
+			"maxLength": 200
+		},
+		"created_at": {
+			"bsonType": "timestamp"
+		}
+	}
+}

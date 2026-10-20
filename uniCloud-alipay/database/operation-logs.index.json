@@ -1,0 +1,30 @@
+[
+	{
+		"IndexName": "request_id_unique",
+		"MgoKeySchema": {
+			"MgoIndexKeys": [
+				{
+					"Name": "request_id",
+					"Direction": "1"
+				}
+			],
+			"MgoIsUnique": true
+		}
+	},
+	{
+		"IndexName": "operator_created_at",
+		"MgoKeySchema": {
+			"MgoIndexKeys": [
+				{
+					"Name": "operator_id",
+					"Direction": "1"
+				},
+				{
+					"Name": "created_at",
+					"Direction": "-1"
+				}
+			],
+			"MgoIsUnique": false
+		}
+	}
+]

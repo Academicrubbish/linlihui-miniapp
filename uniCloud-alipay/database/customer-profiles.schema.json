@@ -1,0 +1,42 @@
+{
+	"bsonType": "object",
+	"required": ["user_id", "display_name", "status", "created_at", "updated_at"],
+	"permission": {
+		"read": false,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "顾客档案 ID"
+		},
+		"user_id": {
+			"bsonType": "string",
+			"description": "关联的 uni-id 用户 ID"
+		},
+		"display_name": {
+			"bsonType": "string",
+			"minLength": 1,
+			"maxLength": 30,
+			"description": "顾客展示名称"
+		},
+		"mobile_masked": {
+			"bsonType": "string",
+			"description": "脱敏后的手机号，仅用于界面展示"
+		},
+		"status": {
+			"bsonType": "string",
+			"enum": ["active", "disabled"],
+			"description": "档案状态"
+		},
+		"created_at": {
+			"bsonType": "timestamp",
+			"description": "创建时间"
+		},
+		"updated_at": {
+			"bsonType": "timestamp",
+			"description": "最后更新时间"
+		}
+	}
+}

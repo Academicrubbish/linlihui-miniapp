@@ -1,0 +1,52 @@
+{
+	"bsonType": "object",
+	"required": ["customer_id", "type", "amount_cents", "title", "business_no", "operator_id", "created_at"],
+	"permission": {
+		"read": false,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "不可变福利流水 ID"
+		},
+		"customer_id": {
+			"bsonType": "string",
+			"description": "顾客档案 ID"
+		},
+		"type": {
+			"bsonType": "string",
+			"enum": ["grant", "subsidy_use", "refund", "adjustment"],
+			"description": "流水类型"
+		},
+		"amount_cents": {
+			"bsonType": "int",
+			"description": "变动金额，单位分；扣减使用负数"
+		},
+		"title": {
+			"bsonType": "string",
+			"minLength": 1,
+			"maxLength": 40
+		},
+		"note": {
+			"bsonType": "string",
+			"maxLength": 120
+		},
+		"business_no": {
+			"bsonType": "string",
+			"description": "业务幂等单号"
+		},
+		"application_id": {
+			"bsonType": "string",
+			"description": "关联的补贴申请 ID"
+		},
+		"operator_id": {
+			"bsonType": "string",
+			"description": "操作人 uni-id"
+		},
+		"created_at": {
+			"bsonType": "timestamp"
+		}
+	}
+}

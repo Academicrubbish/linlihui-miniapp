@@ -1,0 +1,52 @@
+{
+	"bsonType": "object",
+	"required": ["name", "stage", "benefit_cents", "status", "starts_at", "ends_at", "created_at", "updated_at"],
+	"permission": {
+		"read": false,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "活动规则 ID"
+		},
+		"name": {
+			"bsonType": "string",
+			"minLength": 1,
+			"maxLength": 50
+		},
+		"stage": {
+			"bsonType": "string",
+			"enum": ["trust_launch", "trial_week", "normal"]
+		},
+		"benefit_cents": {
+			"bsonType": "int",
+			"minimum": 1
+		},
+		"allow_physical_gift": {
+			"bsonType": "bool",
+			"description": "是否允许选择原有实物福利"
+		},
+		"summary": {
+			"bsonType": "string",
+			"maxLength": 160
+		},
+		"status": {
+			"bsonType": "string",
+			"enum": ["draft", "active", "ended"]
+		},
+		"starts_at": {
+			"bsonType": "timestamp"
+		},
+		"ends_at": {
+			"bsonType": "timestamp"
+		},
+		"created_at": {
+			"bsonType": "timestamp"
+		},
+		"updated_at": {
+			"bsonType": "timestamp"
+		}
+	}
+}

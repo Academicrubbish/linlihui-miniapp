@@ -1,0 +1,71 @@
+{
+	"bsonType": "object",
+	"required": ["customer_id", "platform", "order_no", "order_amount_cents", "requested_cents", "status", "created_at", "updated_at"],
+	"permission": {
+		"read": false,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "购物补贴申请 ID"
+		},
+		"customer_id": {
+			"bsonType": "string"
+		},
+		"platform": {
+			"bsonType": "string",
+			"minLength": 1,
+			"maxLength": 30
+		},
+		"order_no": {
+			"bsonType": "string",
+			"minLength": 6,
+			"maxLength": 64,
+			"description": "真实订单号；由云对象做唯一性校验"
+		},
+		"order_amount_cents": {
+			"bsonType": "int",
+			"minimum": 1
+		},
+		"requested_cents": {
+			"bsonType": "int",
+			"minimum": 1
+		},
+		"proof_file_ids": {
+			"bsonType": "array",
+			"maxItems": 3,
+			"items": {
+				"bsonType": "string"
+			}
+		},
+		"note": {
+			"bsonType": "string",
+			"maxLength": 120
+		},
+		"status": {
+			"bsonType": "string",
+			"enum": ["pending", "approved", "rejected", "paid", "cancelled"]
+		},
+		"review_note": {
+			"bsonType": "string",
+			"maxLength": 120
+		},
+		"reviewer_id": {
+			"bsonType": "string"
+		},
+		"reviewed_at": {
+			"bsonType": "timestamp"
+		},
+		"paid_at": {
+			"bsonType": "timestamp"
+		},
+		"created_at": {
+			"bsonType": "timestamp"
+		},
+		"updated_at": {
+			"bsonType": "timestamp"
+		}
+	}
+}
