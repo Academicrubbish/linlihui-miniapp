@@ -1,0 +1,12 @@
+{
+  "name": "haolin-cleanup",
+  "version": "1.0.0",
+  "main": "index.obj.js",
+  "cloudfunction-config": {
+    "runtime": "Nodejs18",
+    "memorySize": 256,
+    "timeout": 60,
+    "triggers": [{ "name": "haolin-retention", "type": "timer", "config": "0 17 3 * * * *" }]
+  },
+  "dependencies": {}
+}

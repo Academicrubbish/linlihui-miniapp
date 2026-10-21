@@ -1,0 +1,30 @@
+{
+  "bsonType": "object",
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "required": [
+    "base64",
+    "mime",
+    "updatedAt"
+  ],
+  "properties": {
+    "base64": {
+      "bsonType": "string",
+      "maxLength": 820000
+    },
+    "mime": {
+      "bsonType": "string",
+      "enum": [
+        "image/png",
+        "image/jpeg"
+      ]
+    },
+    "updatedAt": {
+      "bsonType": "long"
+    }
+  }
+}

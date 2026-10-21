@@ -1,3 +1,6 @@
 unpackage/
 .DS_Store
 .hbuilderx/
+.env
+.env.*
+*.admin-record.json

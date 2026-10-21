@@ -1,0 +1,47 @@
+[
+  { "IndexName": "proof_expiry", "MgoKeySchema": { "MgoIndexKeys": [{ "Name": "proofExpiresAt", "Direction": "1" }], "MgoIsUnique": false } },
+  {
+    "IndexName": "order_unique",
+    "MgoKeySchema": {
+      "MgoIndexKeys": [
+        {
+          "Name": "orderNo",
+          "Direction": "1"
+        }
+      ],
+      "MgoIsUnique": true
+    }
+  },
+  {
+    "IndexName": "customer_created",
+    "MgoKeySchema": {
+      "MgoIndexKeys": [
+        {
+          "Name": "customerId",
+          "Direction": "1"
+        },
+        {
+          "Name": "createdAt",
+          "Direction": "-1"
+        }
+      ],
+      "MgoIsUnique": false
+    }
+  },
+  {
+    "IndexName": "status_created",
+    "MgoKeySchema": {
+      "MgoIndexKeys": [
+        {
+          "Name": "status",
+          "Direction": "1"
+        },
+        {
+          "Name": "createdAt",
+          "Direction": "1"
+        }
+      ],
+      "MgoIsUnique": false
+    }
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "IndexName": "openid_unique",
+    "MgoKeySchema": {
+      "MgoIndexKeys": [
+        {
+          "Name": "openid",
+          "Direction": "1"
+        }
+      ],
+      "MgoIsUnique": true
+    }
+  },
+  {
+    "IndexName": "created",
+    "MgoKeySchema": {
+      "MgoIndexKeys": [
+        {
+          "Name": "createdAt",
+          "Direction": "-1"
+        }
+      ],
+      "MgoIsUnique": false
+    }
+  }
+]

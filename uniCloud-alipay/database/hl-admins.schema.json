@@ -1,0 +1,30 @@
+{
+  "bsonType": "object",
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "required": [
+    "_id",
+    "openid",
+    "name",
+    "enabled"
+  ],
+  "properties": {
+    "_id": {
+      "bsonType": "string",
+      "description": "必须等于对应 hl-customers._id（SHA256(openID)），只在数据库维护"
+    },
+    "openid": {
+      "bsonType": "string"
+    },
+    "name": {
+      "bsonType": "string"
+    },
+    "enabled": {
+      "bsonType": "bool"
+    }
+  }
+}

@@ -1,81 +1,24 @@
 {
-	"pages": [
-		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "邻里惠",
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/ledger/index",
-			"style": {
-				"navigationBarTitleText": "福利明细"
-			}
-		},
-		{
-			"path": "pages/applications/index",
-			"style": {
-				"navigationBarTitleText": "我的申请"
-			}
-		},
-		{
-			"path": "pages/subsidy/apply",
-			"style": {
-				"navigationBarTitleText": "申请购物补贴"
-			}
-		},
-		{
-			"path": "pages/rules/index",
-			"style": {
-				"navigationBarTitleText": "活动规则"
-			}
-		},
-		{
-			"path": "pages/admin/index",
-			"style": {
-				"navigationBarTitleText": "店主工作台"
-			}
-		},
-		{
-			"path": "pages/admin/grant",
-			"style": {
-				"navigationBarTitleText": "发放福利"
-			}
-		},
-		{
-			"path": "pages/admin/review",
-			"style": {
-				"navigationBarTitleText": "审核申请"
-			}
-		}
-	],
-	"tabBar": {
-		"color": "#6E7972",
-		"selectedColor": "#176044",
-		"backgroundColor": "#FFFDF8",
-		"borderStyle": "white",
-		"list": [
-			{
-				"pagePath": "pages/index/index",
-				"text": "首页"
-			},
-			{
-				"pagePath": "pages/ledger/index",
-				"text": "福利明细"
-			},
-			{
-				"pagePath": "pages/applications/index",
-				"text": "我的申请"
-			}
-		]
-	},
-	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "邻里惠",
-		"navigationBarBackgroundColor": "#FFFDF8",
-		"backgroundColor": "#F6F1E7",
-		"backgroundTextStyle": "dark"
-	},
-	"uniIdRouter": {}
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "好邻小站",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/admin/index",
+      "style": {
+        "navigationBarTitleText": "店主管理",
+        "enablePullDownRefresh": true
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "好邻小站",
+    "navigationBarBackgroundColor": "#FAF8F4",
+    "backgroundColor": "#FAF8F4"
+  }
 }

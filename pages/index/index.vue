@@ -1,230 +1,170 @@
 <template>
-	<view class="home">
-		<view class="topbar">
-			<view class="brand" aria-label="邻里惠">
-				<view class="brand-mark">邻</view>
-				<view>
-					<text class="brand-name">邻里惠</text>
-					<text class="brand-subtitle">熟客福利小助手</text>
-				</view>
-			</view>
-			<view class="demo-badge">演示模式</view>
-		</view>
+  <view class="screen">
+    <view class="brand-row">
+      <image class="brand-icon" src="/static/haolin-station-avatar.png" mode="aspectFill" @click="tapBrand" />
+      <view class="grow"><text class="brand-name">好邻小站</text><text class="muted block">熟人小店，贴心一点</text></view>
+      <button class="link" @click="showRules = !showRules">使用说明</button>
+    </view>
 
-		<view class="screen home-screen">
-			<view class="welcome-row">
-				<view>
-					<text class="eyebrow">今日福利</text>
-					<text class="welcome-title">{{ greeting }}，{{ dashboard.customer.name }}</text>
-				</view>
-				<view class="rule-link" @click="goRules">规则说明 <text class="arrow">›</text></view>
-			</view>
+    <view v-if="showRules" class="card rules">
+      <text class="title">积分怎么用？</text>
+      <text class="block">① 填好姓名，方便店主给您发积分。</text>
+      <text class="block">② 在店主经营的渠道购物并收货后，提交订单号和截图。</text>
+      <text class="block">③ 店主核实后，线下把补贴转给您，再扣除积分。</text>
+      <view class="notice">1 积分可补贴 1 元。比如购物 30 元、剩余 5 积分，就补贴 5 元，积分扣到 0。</view>
+      <text class="muted block">积分由店主免费发放，不能充值、转让。不拉人、不计息。退货退款请及时联系店主核实。</text>
+      <text class="field">个人信息说明</text>
+      <text class="muted block">微信身份用于区分账户；姓名用于店主认人；订单号及收货截图仅用于核实补贴，由店主及获授权的家人查看。请遮住地址、电话等无关信息。截图在订单处理完成后保留 90 天，之后清理；账目保留用于对账。如需更正或删除信息，请联系店主。</text>
+      <button class="link" @click="showRules = false">知道了，收起</button>
+    </view>
 
-			<view class="balance-card">
-				<view class="soft-orb orb-one"></view>
-				<view class="soft-orb orb-two"></view>
-				<view class="balance-content">
-					<text class="balance-label">可以申请的购物补贴</text>
-					<view class="balance-number">
-						<text class="currency">¥</text>
-						<text class="amount">{{ money(dashboard.account.availableCents) }}</text>
-					</view>
-					<view v-if="dashboard.account.frozenCents > 0" class="frozen-note">
-						另有 ¥{{ money(dashboard.account.frozenCents) }} 正在审核
-					</view>
-					<button class="hero-button" @click="goApply">
-						<text>申请购物补贴</text>
-						<text class="hero-arrow">→</text>
-					</button>
-				</view>
-			</view>
+    <view v-if="error" class="error">{{ error }}<button class="link" :disabled="loading" @click="load">重新加载</button></view>
+    <view class="balance-panel">
+      <text class="balance-label">我的积分</text>
+      <view class="balance-value amount">{{ ready ? money(customer.balance) : '—' }}<text class="unit">积分</text></view>
+      <text v-if="customer.reserved && ready" class="balance-note">其中 {{ money(customer.reserved) }} 积分正在办理补贴</text>
+      <text v-else class="balance-note">{{ loading ? '正在读取…' : '购物收货后，可凭订单申请补贴' }}</text>
+      <view class="identity">
+        <view v-if="customer.name && !editName" class="row">
+          <view class="grow"><text class="customer-name block wrap">{{ customer.name }}</text><text class="member-no">会员 {{ customer.memberNo }}</text></view>
+          <button class="name-edit" :disabled="!ready || busy" @click="editName = true; name = customer.name">改姓名</button>
+        </view>
+        <view v-else>
+          <label class="name-label" for="customer-name">先填您的姓名，店主才知道发给谁</label>
+          <view class="row">
+            <input id="customer-name" v-model="name" class="grow" maxlength="20" placeholder="店主认识的姓名" :disabled="!ready || busy" />
+            <button class="name-save" :disabled="!ready || busy || !name.trim()" @click="saveName">保存</button>
+          </view>
+        </view>
+      </view>
+    </view>
 
-			<view class="trust-row" aria-label="福利特点">
-				<view class="trust-item"><view class="trust-dot"></view><text>免费发放</text></view>
-				<view class="trust-item"><view class="trust-dot"></view><text>笔笔可查</text></view>
-				<view class="trust-item"><view class="trust-dot"></view><text>不拉人头</text></view>
-			</view>
+    <view class="card submit-card">
+      <text class="title">收货了，交个订单</text>
+      <text class="muted block">填订单号，选一张已收货截图就好。</text>
+      <label class="field" for="order-number">订单号</label>
+      <input id="order-number" v-model="orderNo" maxlength="64" placeholder="粘贴完整订单号" :disabled="busy" />
+      <text class="field">已收货截图</text>
+      <button class="proof-picker" :disabled="busy" @click="selectProof">
+        <image v-if="proof.path" :src="proof.path" class="proof-thumb" mode="aspectFit" />
+        <text class="block">{{ proof.path ? '已选好 · 点这里换一张' : '＋ 从相册选择截图' }}</text>
+      </button>
+      <text class="muted block proof-hint">截图需看得清订单号、实付金额和收货状态。</text>
+      <view v-if="formError" class="error">{{ formError }}</view>
+      <view v-if="success" class="notice">{{ success }}</view>
+      <button class="primary" :disabled="busy || !ready || !customer.name || !orderNo.trim() || !proof.base64" :loading="busy" @click="submit">{{ customer.name ? '提交给店主' : '请先保存您的姓名' }}</button>
+    </view>
 
-			<view class="section-heading">
-				<text class="section-title">本期活动</text>
-				<text class="activity-date">至 {{ shortDate(dashboard.activity.validUntil) }}</text>
-			</view>
-			<view class="activity-card card">
-				<view class="activity-index">02</view>
-				<view class="activity-copy">
-					<text class="activity-name">{{ dashboard.activity.name }}</text>
-					<text class="activity-summary">{{ dashboard.activity.summary }}</text>
-					<view class="choice-row">
-						<view class="choice muted">一桶桶面</view>
-						<text class="or-text">或者</text>
-						<view class="choice active">¥{{ money(dashboard.activity.benefitCents) }} 福利额度</view>
-					</view>
-					<text class="choice-hint">到店时自己选，不强制使用小程序</text>
-				</view>
-			</view>
+    <button v-if="orders.length" class="record-toggle row" @click="showOrders = !showOrders"><text>我提交的订单（{{ orders.length }}{{ hasMore ? '+' : '' }}）</text><text>{{ showOrders ? '收起' : '查看' }}</text></button>
+    <view v-if="showOrders">
+      <view v-for="order in orders" :key="order.id" class="card order-record">
+        <view class="row"><text class="status">{{ statusName(order.status) }}</text><text class="muted">{{ date(order.createdAt) }}</text></view>
+        <text class="muted block wrap">订单 {{ order.orderNo }}</text>
+        <text v-if="order.status === 'paid'" class="block">已补贴 {{ money(order.payout) }} 元</text>
+        <text v-if="order.note" class="block">{{ order.note }}</text>
+        <button v-if="order.status === 'rejected'" class="link" :disabled="busy" @click="resubmit(order)">重新填写这个订单</button>
+      </view>
+      <button v-if="hasMore" class="secondary" :disabled="loading" @click="loadMore">再看一些</button>
+    </view>
+    <text class="footer-note">有不明白的，问问店主就好。</text>
 
-			<view class="section-heading"><text class="section-title">办事入口</text></view>
-			<view class="action-grid">
-				<view class="action-card card" @click="goLedger">
-					<view class="action-icon ledger-icon"><text>账</text></view>
-					<text class="action-title">福利明细</text>
-					<text class="action-description">每笔来源都能查</text>
-					<text class="action-arrow">→</text>
-				</view>
-				<view class="action-card card" @click="goApplications">
-					<view class="action-icon application-icon"><text>审</text></view>
-					<text class="action-title">申请进度</text>
-					<text class="action-description">看看审核到哪一步</text>
-					<view v-if="dashboard.pendingCount" class="count-badge">{{ dashboard.pendingCount }}</view>
-					<text class="action-arrow">→</text>
-				</view>
-			</view>
-
-			<view class="section-heading">
-				<text class="section-title">最近记录</text>
-				<view class="text-link" @click="goLedger">查看全部</view>
-			</view>
-			<view class="record-list card">
-				<view v-for="(item, index) in dashboard.recentLedgers" :key="item.id" class="record-item" :class="{ 'with-divider': index > 0 }">
-					<view class="record-symbol" :class="item.amountCents < 0 ? 'minus' : 'plus'">{{ item.amountCents < 0 ? '−' : '+' }}</view>
-					<view class="record-main">
-						<text class="record-title">{{ item.title }}</text>
-						<text class="record-meta">{{ shortDate(item.createdAt) }} · {{ item.note }}</text>
-					</view>
-					<text class="record-amount" :class="{ negative: item.amountCents < 0 }">{{ item.amountCents < 0 ? '−' : '+' }}¥{{ money(Math.abs(item.amountCents)) }}</text>
-				</view>
-			</view>
-
-			<view class="promise-card">
-				<view class="promise-mark">✓</view>
-				<view>
-					<text class="promise-title">这不是投资，也不是虚拟货币</text>
-					<text class="promise-copy">福利由店主免费发放，不能充值、转让或升值。只按真实订单申请补贴。</text>
-				</view>
-			</view>
-
-			<view class="owner-entry" @click="goAdmin">我是店主，进入工作台 <text>›</text></view>
-		</view>
-	</view>
+  </view>
 </template>
-
 <script>
-	import { getDashboard } from '@/services/benefit-service.js'
-	import { formatMoney, formatDate } from '@/utils/format.js'
-
-	export default {
-		data() {
-			return {
-				dashboard: {
-					customer: { name: '您好' },
-					account: { availableCents: 0, frozenCents: 0 },
-					activity: { name: '', summary: '', validUntil: '', benefitCents: 0 },
-					recentLedgers: [],
-					pendingCount: 0
-				}
-			}
-		},
-		computed: {
-			greeting() {
-				const hour = new Date().getHours()
-				if (hour < 11) return '早上好'
-				if (hour < 14) return '中午好'
-				if (hour < 18) return '下午好'
-				return '晚上好'
-			}
-		},
-		onShow() {
-			this.dashboard = getDashboard()
-		},
-		methods: {
-			money: formatMoney,
-			shortDate(value) {
-				return formatDate(value).replace(/^\d{4}年/, '')
-			},
-			goApply() { uni.navigateTo({ url: '/pages/subsidy/apply' }) },
-			goRules() { uni.navigateTo({ url: '/pages/rules/index' }) },
-			goLedger() { uni.switchTab({ url: '/pages/ledger/index' }) },
-			goApplications() { uni.switchTab({ url: '/pages/applications/index' }) },
-			goAdmin() { uni.navigateTo({ url: '/pages/admin/index' }) }
-		}
-	}
+import { api, chooseProof } from '@/services/benefit-service.js'
+import { formatMoney, formatDate } from '@/utils/format.js'
+export default {
+  data() { return { customer: {}, orders: [], hasMore: false, name: '', editName: false, orderNo: '', proof: {}, ready: false, loading: false, busy: false, error: '', formError: '', success: '', showRules: false, showOrders: false, adminBusy: false, taps: 0, lastTap: 0 } },
+  onShow() { this.load() },
+  async onPullDownRefresh() { await this.load(); uni.stopPullDownRefresh() },
+  onHide() { this.taps = 0 },
+  methods: {
+    money: formatMoney,
+    date(value) { return formatDate(value).replace(/^\d{4}年/, '') },
+    statusName(value) { return { pending: '等店主核实', processing: '店主正在办理', paid: '已转账', rejected: '请补充信息' }[value] || '处理中' },
+    async load() {
+      if (this.loading) return
+      this.loading = true; this.error = ''
+      try { const data = await api('home'); this.customer = data.customer; this.orders = data.orders; this.hasMore = data.hasMore; this.ready = true }
+      catch (e) { this.error = e.message; this.ready = false }
+      finally { this.loading = false }
+    },
+    async loadMore() {
+      this.loading = true
+      try { const data = await api('home', { offset: this.orders.length }); this.orders.push(...data.orders); this.hasMore = data.hasMore }
+      catch (e) { this.error = e.message }
+      finally { this.loading = false }
+    },
+    async saveName() {
+      this.busy = true; this.formError = ''
+      try { await api('saveName', { name: this.name }); this.customer.name = this.name.trim(); this.editName = false; uni.showToast({ title: '姓名已保存', icon: 'success' }) }
+      catch (e) { this.formError = e.message }
+      finally { this.busy = false }
+    },
+    async selectProof() {
+      this.formError = ''; this.success = ''
+      try {
+        const consent = await uni.showModal({ title: '仅用于核实购物补贴', content: '截图会交给店主及授权管理员核实，处理完成后保留 90 天。请遮住地址、电话等无关信息。', confirmText: '同意选择', cancelText: '暂不选择' })
+        if (!consent.confirm) return
+        this.proof = await chooseProof()
+      } catch (e) { if (!/cancel/.test(e.errMsg || e.message || '')) this.formError = e.message || '没有选好截图，请重试' }
+    },
+    async submit() {
+      if (this.busy) return
+      this.busy = true; this.formError = ''; this.success = ''
+      try {
+        const order = await api('submitOrder', { orderNo: this.orderNo, base64: this.proof.base64 })
+        this.orderNo = ''; this.proof = {}; this.showOrders = true
+        this.success = order.status === 'paid' ? '这个订单已处理过，可在下方查看。' : '交好了！店主处理后会在这里更新。'
+        await this.load()
+      } catch (e) { this.formError = e.message }
+      finally { this.busy = false }
+    },
+    resubmit(order) { this.orderNo = order.orderNo; this.proof = {}; this.success = ''; this.formError = ''; uni.pageScrollTo({ scrollTop: 260, duration: 250 }) },
+    tapBrand() {
+      const now = Date.now()
+      this.taps = now - this.lastTap <= 700 ? this.taps + 1 : 1; this.lastTap = now
+      if (this.taps >= 5) { this.taps = 0; this.enterAdmin() }
+    },
+    async enterAdmin() {
+      if (this.adminBusy) return
+      this.adminBusy = true
+      uni.showLoading({ title: '正在核对身份', mask: true })
+      try {
+        await api('adminLogin')
+        uni.hideLoading()
+        uni.navigateTo({ url: '/pages/admin/index' })
+      } catch (e) {
+        uni.hideLoading()
+        uni.showModal({ title: '暂时无法进入管理', content: e.message, showCancel: false, confirmText: '知道了' })
+      } finally { this.adminBusy = false }
+    }
+  }
+}
 </script>
-
 <style scoped>
-	.home { min-height: 100vh; background: #F6F1E7; }
-	.topbar { padding: calc(var(--status-bar-height) + 20rpx) 32rpx 20rpx; display: flex; align-items: center; justify-content: space-between; background: rgba(255, 253, 248, 0.94); border-bottom: 2rpx solid rgba(23, 35, 29, 0.06); }
-	.brand { display: flex; align-items: center; gap: 18rpx; }
-	.brand-mark { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; border-radius: 22rpx 22rpx 8rpx 22rpx; background: #176044; color: #FFFFFF; font-size: 34rpx; font-weight: 760; box-shadow: 0 10rpx 24rpx rgba(23, 96, 68, 0.2); }
-	.brand-name, .brand-subtitle { display: block; }
-	.brand-name { font-size: 32rpx; font-weight: 780; line-height: 1.2; color: #17231D; letter-spacing: 2rpx; }
-	.brand-subtitle { margin-top: 4rpx; font-size: 22rpx; color: #708078; }
-	.home-screen { padding-top: 36rpx; padding-bottom: calc(150rpx + env(safe-area-inset-bottom)); }
-	.welcome-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24rpx; margin: 0 4rpx 26rpx; }
-	.welcome-title { display: block; font-size: 43rpx; line-height: 1.2; font-weight: 760; color: #17231D; }
-	.rule-link { min-height: 72rpx; flex-shrink: 0; display: flex; align-items: center; font-size: 27rpx; font-weight: 650; color: #176044; }
-	.arrow { margin-left: 8rpx; font-size: 38rpx; font-weight: 400; }
-	.balance-card { position: relative; overflow: hidden; min-height: 520rpx; padding: 48rpx 42rpx 40rpx; border-radius: 42rpx; background: linear-gradient(145deg, #1F7253 0%, #104936 100%); box-shadow: 0 28rpx 64rpx rgba(23, 72, 54, 0.22); color: #FFFFFF; }
-	.soft-orb { position: absolute; border-radius: 999rpx; background: rgba(255, 221, 170, 0.13); }
-	.orb-one { width: 310rpx; height: 310rpx; right: -100rpx; top: -80rpx; }
-	.orb-two { width: 170rpx; height: 170rpx; right: 80rpx; bottom: -80rpx; }
-	.balance-content { position: relative; z-index: 1; }
-	.balance-label { display: block; font-size: 29rpx; color: rgba(255, 255, 255, 0.78); }
-	.balance-number { display: flex; align-items: flex-start; margin-top: 12rpx; line-height: 1; }
-	.currency { margin: 18rpx 12rpx 0 0; font-size: 38rpx; font-weight: 620; }
-	.amount { font-size: 104rpx; font-weight: 780; letter-spacing: -5rpx; }
-	.frozen-note { display: inline-flex; min-height: 52rpx; align-items: center; margin-top: 22rpx; padding: 0 18rpx; border-radius: 999rpx; background: rgba(255, 255, 255, 0.13); font-size: 25rpx; color: #F6F2E8; }
-	.hero-button { width: 100%; min-height: 108rpx; display: flex; align-items: center; justify-content: space-between; margin-top: 42rpx; padding: 0 34rpx; border-radius: 28rpx; background: #FFF6E8; color: #164C38; font-size: 34rpx; font-weight: 760; box-shadow: 0 14rpx 30rpx rgba(4, 27, 19, 0.18); }
-	.hero-arrow { width: 52rpx; height: 52rpx; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #EAC46F; font-size: 31rpx; }
-	.trust-row { display: flex; align-items: center; justify-content: space-around; margin: 26rpx 2rpx 0; padding: 22rpx 14rpx; border-radius: 24rpx; background: rgba(255, 253, 248, 0.72); color: #526059; font-size: 26rpx; font-weight: 600; }
-	.trust-item { display: flex; align-items: center; gap: 10rpx; }
-	.trust-dot { width: 10rpx; height: 10rpx; border-radius: 50%; background: #D57B3E; }
-	.activity-date { font-size: 26rpx; color: #6F7A73; }
-	.activity-card { position: relative; overflow: hidden; display: flex; gap: 28rpx; padding: 34rpx 30rpx; }
-	.activity-index { flex: 0 0 74rpx; height: 74rpx; display: flex; align-items: center; justify-content: center; border-radius: 24rpx 24rpx 8rpx 24rpx; background: #F7D698; color: #653D18; font-size: 28rpx; font-weight: 780; }
-	.activity-copy { min-width: 0; flex: 1; }
-	.activity-name, .activity-summary, .choice-hint { display: block; }
-	.activity-name { font-size: 34rpx; font-weight: 750; color: #203129; }
-	.activity-summary { margin-top: 10rpx; font-size: 28rpx; line-height: 1.6; color: #5B6861; }
-	.choice-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10rpx; margin-top: 24rpx; }
-	.choice { min-height: 58rpx; display: flex; align-items: center; padding: 0 18rpx; border-radius: 18rpx; font-size: 25rpx; font-weight: 680; }
-	.choice.muted { background: #F0EEE7; color: #5C655F; }
-	.choice.active { background: #E1F0E5; color: #17583F; }
-	.or-text { font-size: 23rpx; color: #909990; }
-	.choice-hint { margin-top: 18rpx; font-size: 25rpx; color: #7B847E; }
-	.action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20rpx; }
-	.action-card { position: relative; min-height: 286rpx; padding: 28rpx; }
-	.action-icon { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; border-radius: 22rpx; font-size: 26rpx; font-weight: 780; }
-	.ledger-icon { background: #E1F0E5; color: #176044; }
-	.application-icon { background: #FBE7D5; color: #A24F20; }
-	.action-title, .action-description { display: block; }
-	.action-title { margin-top: 26rpx; font-size: 32rpx; font-weight: 730; color: #213129; }
-	.action-description { margin-top: 8rpx; padding-right: 16rpx; font-size: 25rpx; line-height: 1.5; color: #707A74; }
-	.action-arrow { position: absolute; right: 26rpx; bottom: 24rpx; font-size: 34rpx; color: #35634E; }
-	.count-badge { position: absolute; right: 22rpx; top: 22rpx; min-width: 42rpx; height: 42rpx; display: flex; align-items: center; justify-content: center; padding: 0 10rpx; border-radius: 999rpx; background: #B95D2C; color: #FFFFFF; font-size: 23rpx; font-weight: 750; }
-	.record-list { padding: 8rpx 30rpx; }
-	.record-item { display: flex; align-items: center; min-height: 142rpx; padding: 24rpx 0; }
-	.record-item.with-divider { border-top: 2rpx solid #ECEBE5; }
-	.record-symbol { flex: 0 0 62rpx; height: 62rpx; display: flex; align-items: center; justify-content: center; border-radius: 20rpx; background: #E1F0E5; color: #176044; font-size: 34rpx; font-weight: 650; }
-	.record-symbol.minus { background: #FBE7DE; color: #9B4526; }
-	.record-main { min-width: 0; flex: 1; padding: 0 20rpx; }
-	.record-title, .record-meta { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-	.record-title { font-size: 29rpx; font-weight: 680; color: #223129; }
-	.record-meta { margin-top: 6rpx; font-size: 24rpx; color: #7A847D; }
-	.record-amount { flex-shrink: 0; font-size: 30rpx; font-weight: 750; color: #176044; }
-	.record-amount.negative { color: #9B4526; }
-	.promise-card { display: flex; gap: 20rpx; margin-top: 34rpx; padding: 30rpx; border-radius: 28rpx; background: #E9EEE8; }
-	.promise-mark { flex: 0 0 54rpx; height: 54rpx; display: flex; align-items: center; justify-content: center; border: 3rpx solid #3B765D; border-radius: 50%; color: #176044; font-size: 28rpx; font-weight: 800; }
-	.promise-title, .promise-copy { display: block; }
-	.promise-title { font-size: 29rpx; font-weight: 720; color: #26372E; }
-	.promise-copy { margin-top: 8rpx; font-size: 25rpx; line-height: 1.6; color: #607067; }
-	.owner-entry { min-height: 100rpx; display: flex; align-items: center; justify-content: center; margin-top: 24rpx; font-size: 27rpx; font-weight: 650; color: #637069; }
-	.owner-entry text { margin-left: 12rpx; font-size: 38rpx; }
-
-	@media (max-width: 360px) {
-		.amount { font-size: 88rpx; }
-		.activity-card { gap: 20rpx; padding: 30rpx 24rpx; }
-		.action-grid { gap: 14rpx; }
-		.action-card { padding: 24rpx; }
-		.trust-row { font-size: 24rpx; }
-	}
+.brand-row { display: flex; align-items: center; gap: 18rpx; margin: 8rpx 0 30rpx; }
+.brand-icon { width: 80rpx; height: 80rpx; border-radius: 22rpx; flex-shrink: 0; }
+.brand-name { display: block; font-size: 36rpx; font-weight: 700; }
+.brand-row .muted { font-size: 26rpx; }
+.brand-row .link { font-size: 28rpx; }
+.balance-panel { background: #315A3F; color: #FFF; border-radius: 30rpx; padding: 32rpx; margin-bottom: 26rpx; }
+.balance-label { font-size: 34rpx; color: #EEF2E9; }
+.balance-value { font-size: 92rpx; font-weight: 650; letter-spacing: -2rpx; line-height: 1.4; overflow-wrap: anywhere; }
+.unit { margin-left: 16rpx; font-size: 30rpx; font-weight: 400; letter-spacing: 0; }
+.balance-note { display: block; color: #E0E9DC; font-size: 28rpx; }
+.identity { border-top: 2rpx solid #67806B; margin-top: 26rpx; padding-top: 22rpx; }
+.customer-name { font-size: 36rpx; font-weight: 600; }
+.member-no { color: #E0E9DC; font-size: 24rpx; }
+.name-edit, .name-save { background: #EDF2E9; color: #254A32; font-size: 30rpx; padding: 12rpx 20rpx; min-height: 88rpx; border-radius: 14rpx; flex-shrink: 0; }
+.name-label { display: block; margin-bottom: 14rpx; font-size: 29rpx; }
+.identity input { font-size: 32rpx; min-width: 0; }
+.proof-picker { width: 100%; min-height: 132rpx; border: 2rpx dashed #8D9E84; background: #F7F9F3; border-radius: 18rpx; color: #315A3F; padding: 24rpx 12rpx; font-size: 34rpx; }
+.proof-thumb { display: block; margin: 0 auto 16rpx; width: 100%; height: 230rpx; }
+.proof-hint { margin: 14rpx 0 28rpx; font-size: 28rpx; }
+.record-toggle { width: 100%; padding: 16rpx 6rpx; background: transparent; font-size: 30rpx; color: #4F5A4E; margin: 0 0 16rpx; }
+.status { color: #315A3F; font-weight: 600; }
+.order-record .muted { font-size: 28rpx; }
+.footer-note { display: block; text-align: center; color: #6E746A; font-size: 28rpx; padding: 12rpx 0; }
+.rules > .block { margin-top: 22rpx; }
 </style>

@@ -1,0 +1,7 @@
+{
+  "name": "haolin-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "cloudfunction-config": { "runtime": "Nodejs18", "memorySize": 256, "timeout": 20 },
+  "dependencies": {}
+}
