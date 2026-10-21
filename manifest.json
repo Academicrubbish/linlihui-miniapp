@@ -1,5 +1,5 @@
 {
-    "name" : "邻里惠",
+    "name" : "好邻小站",
     "appid" : "__UNI__4849F37",
     "description" : "",
     "versionName" : "1.0.0",
@@ -50,9 +50,12 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "",
+        "appid" : "wxb2121357f142672b",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "minified" : true,
+            "postcss" : true,
+            "es6" : true
         },
         "usingComponents" : true
     },
